@@ -45,22 +45,22 @@ graph TD
 
 **Base URL:** `https://hg1iywighj.execute-api.ap-south-1.amazonaws.com`
 
-* **🔗 [`POST` /auth/register**](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/auth/register)
+* 🔗 [`POST` /auth/register](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/auth/register)
 * Initial onboarding footprint creation.
 * *Payload:* `{ "userId": "usr_7s", "email": "dev@example.com", "timezone": "Asia/Kolkata" }`
 
 
-* **🔗 [`GET` /habits**](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/habits)
+* 🔗 [`GET` /habits](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/habits)
 * Retrieves all user habits for the masonry layout.
 * *Headers:* `Authorization: Bearer <userId>`
 
 
-* **🔗 [`POST` /habits/create**](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/habits/create)
+* 🔗 [`POST` /habits/create](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/habits/create)
 * Appends a new habit card.
 * *Payload:* `{ "title": "Gym", "cardHeight": 210, "colors": ["#FF0844", "#FFB199"] }`
 
 
-* **🔗 [`POST` /habits/check-in**](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/habits/check-in)
+* 🔗 [`POST` /habits/check-in](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/habits/check-in)
 * Atomic execution update layer handling streaks and progress increments.
 * *Payload:* `{ "habitId": "hab_101" }`
 
