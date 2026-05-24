@@ -1,0 +1,132 @@
+service: habit-tracker-backend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  architecture: arm64
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  
+  # Global Lambda configuration
+  memorySize: 512
+  timeout: 30
+  
+  # Environment variables
+  environment:
+    HABITS_TABLE: HabitsTable
+    ENVIRONMENT: ${self:provider.stage}
+
+  # CORS configuration for HTTP API
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - X-Amz-Date
+        - Authorization
+        - X-Api-Key
+        - X-Amz-Security-Token
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      maxAge: 86400
+
+  # IAM Role Statements for Lambda execution
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Scan
+          Resource:
+            - !GetAtt HabitsTable.Arn
+            - !Sub '${HabitsTable.Arn}/index/*'
+
+# Lambda Functions
+functions:
+  registerUser:
+    handler: src/handlers/auth.registerUser
+    events:
+      - httpApi:
+          path: /auth/register
+          method: post
+
+  getHabits:
+    handler: src/handlers/habits.getHabits
+    events:
+      - httpApi:
+          path: /habits
+          method: get
+
+  createHabit:
+    handler: src/handlers/habits.createHabit
+    events:
+      - httpApi:
+          path: /habits/create
+          method: post
+
+  checkInHabit:
+    handler: src/handlers/habits.checkInHabit
+    events:
+      - httpApi:
+          path: /habits/check-in
+          method: post
+
+# DynamoDB Resources
+resources:
+  Resources:
+    HabitsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: HabitsTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: usernameIndex
+            KeySchema:
+              - AttributeName: username
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        TimeToLiveSpecification:
+          Enabled: true
+          AttributeName: expirationTime
+
+# Plugins
+plugins:
+  - serverless-esbuild
+
+# Custom configurations
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: true
+    target: node20
+    platform: node
+    external: ['@aws-sdk/*']
+    exclude: ['aws-sdk']

@@ -1,0 +1,49 @@
+{
+  "name": "habit-tracker-backend",
+  "version": "1.0.0",
+  "description": "Serverless habit tracker backend for AWS with DynamoDB",
+  "main": "dist/handlers/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "serverless offline start",
+    "deploy": "serverless deploy",
+    "deploy:prod": "serverless deploy --stage prod",
+    "remove": "serverless remove",
+    "logs": "serverless logs -f",
+    "local": "serverless offline start --httpPort 3000",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "jest",
+    "prebuild": "npm run type-check"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.515.0",
+    "@aws-sdk/lib-dynamodb": "^3.515.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.130",
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "eslint": "^8.56.0",
+    "serverless": "^3.38.0",
+    "serverless-esbuild": "^1.54.1",
+    "serverless-offline": "^13.3.0",
+    "serverless-plugin-tracing": "^2.2.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": [
+    "aws",
+    "serverless",
+    "dynamodb",
+    "lambda",
+    "habit-tracker",
+    "api-gateway"
+  ]
+}
