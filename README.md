@@ -1,7 +1,7 @@
 
 # Habit Tracker - Serverless Backend
 
-A high-performance, low-latency serverless backend optimized to run 100% within the **AWS Free Tier** using **TypeScript**, **Serverless Framework (v3)**, and **AWS SDK v3**.
+A high-performance, low-latency serverless backend optimized to run 100% within the **AWS Lambda** using **TypeScript**, **Serverless Framework (v3)**, and **AWS SDK v3**.
 
 ---
 
