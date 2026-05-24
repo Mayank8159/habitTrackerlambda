@@ -29,7 +29,6 @@
     "serverless": "^3.38.0",
     "serverless-esbuild": "^1.54.1",
     "serverless-offline": "^13.3.0",
-    "serverless-plugin-tracing": "^2.2.0",
     "typescript": "^5.3.3"
   },
   "engines": {
