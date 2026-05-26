@@ -4,7 +4,7 @@ import {
   createErrorResponse,
   generateId,
   getHabitsByUserId,
-  createHabit,
+  createHabit as createHabitInDb,
   updateHabitCheckIn,
   deleteHabit as deleteHabitFromDb,
   updateHabit as updateHabitInDb,
@@ -39,7 +39,7 @@ export const getHabits: APIGatewayProxyHandlerV2 = async (event) => {
   try {
     // Extract userId from query parameters or request context
     const userId = event.queryStringParameters?.userId || 
-                   event.requestContext.authorizer?.claims?.sub;
+             (event as any).requestContext?.authorizer?.claims?.sub;
 
     if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
       return createErrorResponse(400, 'userId is required as a query parameter');
@@ -112,7 +112,7 @@ export const createHabit: APIGatewayProxyHandlerV2 = async (event) => {
     }
 
     // Extract userId from body or request context
-    const userId = body.userId || event.requestContext.authorizer?.claims?.sub;
+    const userId = body.userId || (event as any).requestContext?.authorizer?.claims?.sub;
     const { title, cardHeight, colors } = body;
 
     // Validate required fields
@@ -144,7 +144,7 @@ export const createHabit: APIGatewayProxyHandlerV2 = async (event) => {
     const habitId = generateId();
 
     // Create habit in DynamoDB
-    const habit = await createHabit(userId, habitId, title.trim(), cardHeight, {
+    const habit = await createHabitInDb(userId, habitId, title.trim(), cardHeight, {
       primary: colors.primary,
       secondary: colors.secondary,
     });
@@ -211,7 +211,7 @@ export const checkInHabit: APIGatewayProxyHandlerV2 = async (event) => {
     }
 
     // Extract userId from body or request context
-    const userId = body.userId || event.requestContext.authorizer?.claims?.sub;
+    const userId = body.userId || (event as any).requestContext?.authorizer?.claims?.sub;
     const { habitId } = body;
 
     // Validate required fields
@@ -262,7 +262,7 @@ export const checkInHabit: APIGatewayProxyHandlerV2 = async (event) => {
 /**
  * Handle CORS preflight requests
  */
-export const options: APIGatewayProxyHandlerV2 = async (event) => {
+export const options: APIGatewayProxyHandlerV2 = async (_event) => {
   return createSuccessResponse(null);
 };
 
@@ -279,7 +279,7 @@ export const patchHabit: APIGatewayProxyHandlerV2 = async (event) => {
       return createErrorResponse(400, 'Invalid JSON in request body');
     }
 
-    const userId = body.userId || event.queryStringParameters?.userId || event.requestContext.authorizer?.claims?.sub;
+    const userId = body.userId || event.queryStringParameters?.userId || (event as any).requestContext?.authorizer?.claims?.sub;
     const habitId = event.pathParameters?.habitId || body.habitId;
 
     if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
@@ -316,7 +316,7 @@ export const patchHabit: APIGatewayProxyHandlerV2 = async (event) => {
 export const deleteHabit: APIGatewayProxyHandlerV2 = async (event) => {
   try {
     // support userId via query param, path param is habitId
-    const userId = event.queryStringParameters?.userId || event.requestContext.authorizer?.claims?.sub || (event.body ? JSON.parse(event.body).userId : undefined);
+    const userId = event.queryStringParameters?.userId || (event as any).requestContext?.authorizer?.claims?.sub || (event.body ? JSON.parse(event.body).userId : undefined);
     const habitId = event.pathParameters?.habitId || (event.body ? JSON.parse(event.body).habitId : undefined);
 
     if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {

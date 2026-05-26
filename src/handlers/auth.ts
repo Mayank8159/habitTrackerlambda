@@ -90,6 +90,6 @@ function isValidEmail(email: string): boolean {
 /**
  * Handle CORS preflight requests
  */
-export const options: APIGatewayProxyHandlerV2 = async (event) => {
+export const options: APIGatewayProxyHandlerV2 = async (_event) => {
   return createSuccessResponse(null);
 };

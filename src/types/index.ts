@@ -45,7 +45,7 @@ export interface RegisterUserRequest {
   email: string;
 }
 
-export interface APIResponse<T = any> {
+export interface APIResponse {
   statusCode: number;
   headers: {
     [key: string]: string;

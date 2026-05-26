@@ -1,0 +1,4 @@
+﻿{
+  "body": "{\"userId\":\"9817515b-ed6f-4c8d-a5d4-fbea1d389602\",\"title\":\"Local Test Habit\",\"cardHeight\":200,\"colors\":{\"primary\":\"#FF0000\",\"secondary\":\"#00FF00\"}}",
+  "requestContext": { "authorizer": { "claims": { "sub": "9817515b-ed6f-4c8d-a5d4-fbea1d389602" } } }
+}
