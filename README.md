@@ -65,5 +65,25 @@ graph TD
 * *Payload:* `{ "habitId": "hab_101" }`
 
 
+* 🔗 [`PATCH` /habits/{habitId}](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/habits/{habitId})
+* Update habit metadata (title, cardHeight, colors).
+* *Payload (any of):* `{ "title": "New title", "cardHeight": 180, "colors": {"primary":"#FFF","secondary":"#000"} }`
+
+* 🔗 [`DELETE` /habits/{habitId}](https://www.google.com/search?q=https://hg1iywighj.execute-api.ap-south-1.amazonaws.com/habits/{habitId})
+* Remove a habit for the given user.
+* `userId` must be provided via query param, request body or auth claims.
+
+Example curl commands
+```bash
+# Patch habit
+curl -X PATCH "https://<api>/habits/abc123?userId=550e8400-e29b-41d4-a716-446655440000" \
+    -H "Content-Type: application/json" \
+    -d '{"title":"Evening Walk","cardHeight":160}'
+
+# Delete habit
+curl -X DELETE "https://<api>/habits/abc123?userId=550e8400-e29b-41d4-a716-446655440000"
+```
+
+
 
 ---
