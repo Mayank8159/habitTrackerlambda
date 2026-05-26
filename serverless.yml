@@ -33,6 +33,7 @@ provider:
         - GET
         - POST
         - PUT
+        - PATCH
         - DELETE
         - OPTIONS
       maxAge: 86400
@@ -82,6 +83,20 @@ functions:
       - httpApi:
           path: /habits/check-in
           method: post
+
+  patchHabit:
+    handler: src/handlers/habits.patchHabit
+    events:
+      - httpApi:
+          path: /habits/{habitId}
+          method: patch
+
+  deleteHabit:
+    handler: src/handlers/habits.deleteHabit
+    events:
+      - httpApi:
+          path: /habits/{habitId}
+          method: delete
 
 # DynamoDB Resources
 resources:

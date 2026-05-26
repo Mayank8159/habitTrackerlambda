@@ -305,3 +305,61 @@ export async function deleteHabit(userId: string, habitId: string) {
     throw error;
   }
 }
+
+/**
+ * Patch a habit (update title, cardHeight, colors)
+ */
+export async function updateHabit(userId: string, habitId: string, updates: { title?: string; cardHeight?: number; colors?: any }) {
+  try {
+    const allowedKeys: Array<keyof typeof updates> = ['title', 'cardHeight', 'colors'];
+
+    const expressionParts: string[] = [];
+    const ExpressionAttributeNames: Record<string, string> = {};
+    const ExpressionAttributeValues: Record<string, any> = {};
+
+    let idx = 0;
+    for (const key of allowedKeys) {
+      const value = updates[key];
+      if (value === undefined) continue;
+      idx += 1;
+      const nameKey = `#k${idx}`;
+      const valKey = `:v${idx}`;
+      ExpressionAttributeNames[nameKey] = String(key);
+      ExpressionAttributeValues[valKey] = value;
+      expressionParts.push(`${nameKey} = ${valKey}`);
+    }
+
+    if (expressionParts.length === 0) {
+      throw new Error('No updatable fields provided');
+    }
+
+    // always update updatedAt
+    idx += 1;
+    const updatedAtName = `#k${idx}`;
+    const updatedAtVal = `:v${idx}`;
+    ExpressionAttributeNames[updatedAtName] = 'updatedAt';
+    ExpressionAttributeValues[updatedAtVal] = new Date().toISOString();
+    expressionParts.push(`${updatedAtName} = ${updatedAtVal}`);
+
+    const UpdateExpression = 'SET ' + expressionParts.join(', ');
+
+    const result = await dynamodbClient.send(
+      new UpdateCommand({
+        TableName: HABITS_TABLE,
+        Key: {
+          PK: `USER#${userId}`,
+          SK: `HABIT#${habitId}`,
+        },
+        UpdateExpression,
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+        ReturnValues: 'ALL_NEW',
+      })
+    );
+
+    return result.Attributes;
+  } catch (error) {
+    console.error('Error updating habit:', error);
+    throw error;
+  }
+}

@@ -6,6 +6,8 @@ import {
   getHabitsByUserId,
   createHabit,
   updateHabitCheckIn,
+  deleteHabit as deleteHabitFromDb,
+  updateHabit as updateHabitInDb,
 } from '../utils/dynamodb';
 import type { CreateHabitRequest, CheckInRequest } from '../types';
 
@@ -262,4 +264,74 @@ export const checkInHabit: APIGatewayProxyHandlerV2 = async (event) => {
  */
 export const options: APIGatewayProxyHandlerV2 = async (event) => {
   return createSuccessResponse(null);
+};
+
+/**
+ * Patch habit metadata (title, cardHeight, colors)
+ * PATCH /habits/{habitId}
+ */
+export const patchHabit: APIGatewayProxyHandlerV2 = async (event) => {
+  try {
+    let body: any = {};
+    try {
+      body = event.body ? JSON.parse(event.body) : {};
+    } catch (err) {
+      return createErrorResponse(400, 'Invalid JSON in request body');
+    }
+
+    const userId = body.userId || event.queryStringParameters?.userId || event.requestContext.authorizer?.claims?.sub;
+    const habitId = event.pathParameters?.habitId || body.habitId;
+
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      return createErrorResponse(400, 'userId is required');
+    }
+
+    if (!habitId || typeof habitId !== 'string' || habitId.trim().length === 0) {
+      return createErrorResponse(400, 'habitId is required (path param or body)');
+    }
+
+    const updates: any = {};
+    if (body.title && typeof body.title === 'string') updates.title = body.title.trim();
+    if (body.cardHeight !== undefined && typeof body.cardHeight === 'number') updates.cardHeight = body.cardHeight;
+    if (body.colors && typeof body.colors === 'object') updates.colors = body.colors;
+
+    if (Object.keys(updates).length === 0) {
+      return createErrorResponse(400, 'No updatable fields provided');
+    }
+
+    const updated = await updateHabitInDb(userId, habitId, updates);
+    if (!updated) return createErrorResponse(404, 'Habit not found');
+
+    return createSuccessResponse(updated);
+  } catch (error) {
+    console.error('Error in patchHabit:', error);
+    return createErrorResponse(500, 'Failed to update habit');
+  }
+};
+
+/**
+ * Delete a habit
+ * DELETE /habits/{habitId}
+ */
+export const deleteHabit: APIGatewayProxyHandlerV2 = async (event) => {
+  try {
+    // support userId via query param, path param is habitId
+    const userId = event.queryStringParameters?.userId || event.requestContext.authorizer?.claims?.sub || (event.body ? JSON.parse(event.body).userId : undefined);
+    const habitId = event.pathParameters?.habitId || (event.body ? JSON.parse(event.body).habitId : undefined);
+
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      return createErrorResponse(400, 'userId is required');
+    }
+
+    if (!habitId || typeof habitId !== 'string' || habitId.trim().length === 0) {
+      return createErrorResponse(400, 'habitId is required (path param or body)');
+    }
+
+    await deleteHabitFromDb(userId, habitId);
+
+    return createSuccessResponse({ success: true });
+  } catch (error) {
+    console.error('Error in deleteHabit:', error);
+    return createErrorResponse(500, 'Failed to delete habit');
+  }
 };
