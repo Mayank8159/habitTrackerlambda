@@ -363,3 +363,76 @@ export async function updateHabit(userId: string, habitId: string, updates: { ti
     throw error;
   }
 }
+
+/**
+ * Mark a habit as done for a specific day (defaults to today).
+ * This manages the streak count: consecutive days increment the streak,
+ * same-day calls are idempotent, non-consecutive days reset the streak to 1.
+ */
+export async function markHabitDone(userId: string, habitId: string, isoDate?: string) {
+  try {
+    const habit = await getHabit(userId, habitId);
+    if (!habit) throw new Error('Habit not found');
+
+    const now = isoDate ? new Date(isoDate) : new Date();
+
+    const last = habit.lastCheckIn ? new Date(habit.lastCheckIn) : null;
+
+    // Normalize to date-only (UTC) to compute day differences
+    function toDateOnlyUTC(d: Date) {
+      return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    }
+
+    const todayUTC = toDateOnlyUTC(now);
+    const lastUTC = last ? toDateOnlyUTC(last) : null;
+
+    // If already checked in today, return existing
+    if (lastUTC !== null && lastUTC === todayUTC) {
+      return { habitId: habit.habitId, streakCount: habit.streakCount, lastCheckIn: habit.lastCheckIn };
+    }
+
+    let newStreak = 1;
+    if (lastUTC !== null) {
+      const dayDiff = Math.floor((todayUTC - lastUTC) / (24 * 60 * 60 * 1000));
+      if (dayDiff === 1) {
+        // consecutive day
+        newStreak = (habit.streakCount || 0) + 1;
+      } else {
+        // broken streak
+        newStreak = 1;
+      }
+    }
+
+    const updatedAt = new Date().toISOString();
+
+    const result = await dynamodbClient.send(
+      new UpdateCommand({
+        TableName: HABITS_TABLE,
+        Key: { PK: `USER#${userId}`, SK: `HABIT#${habitId}` },
+        UpdateExpression: 'SET #streakCount = :streakCount, #lastCheckIn = :lastCheckIn, #updatedAt = :updatedAt',
+        ExpressionAttributeNames: { '#streakCount': 'streakCount', '#lastCheckIn': 'lastCheckIn', '#updatedAt': 'updatedAt' },
+        ExpressionAttributeValues: { ':streakCount': newStreak, ':lastCheckIn': now.toISOString(), ':updatedAt': updatedAt },
+        ReturnValues: 'ALL_NEW',
+      })
+    );
+
+    return result.Attributes;
+  } catch (error) {
+    console.error('Error in markHabitDone:', error);
+    throw error;
+  }
+}
+
+/**
+ * Retrieve streak information for a habit
+ */
+export async function getHabitStreak(userId: string, habitId: string) {
+  try {
+    const habit = await getHabit(userId, habitId);
+    if (!habit) return null;
+    return { habitId: habit.habitId, streakCount: habit.streakCount || 0, lastCheckIn: habit.lastCheckIn };
+  } catch (error) {
+    console.error('Error in getHabitStreak:', error);
+    throw error;
+  }
+}

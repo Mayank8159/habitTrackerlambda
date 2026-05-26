@@ -22,6 +22,9 @@ graph TD
         GetHabitsHandler[habits.getHabits]:::compute
         CreateHabitHandler[habits.createHabit]:::compute
         CheckInHandler[habits.checkInHabit]:::compute
+        PatchHabitHandler[habits.patchHabit]:::compute
+        DeleteHabitHandler[habits.deleteHabit]:::compute
+        StreakManager[streak.manageStreak (utils)]:::compute
     end
 
     DynamoDB[(DynamoDB <br> HabitsTable)]:::database
@@ -36,6 +39,9 @@ graph TD
     GetHabitsHandler -->|Query| DynamoDB
     CreateHabitHandler -->|PutItem| DynamoDB
     CheckInHandler -->|UpdateItem| DynamoDB
+    PatchHabitHandler -->|UpdateItem| DynamoDB
+    DeleteHabitHandler -->|DeleteItem| DynamoDB
+    CheckInHandler -->|uses| StreakManager
 
 ```
 
